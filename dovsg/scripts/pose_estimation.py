@@ -139,6 +139,12 @@ if __name__ == '__main__':
     tstamps = []
     image_gen = image_stream(args.datadir, args.calib, args.stride)
     total_images = len(os.listdir(os.path.join(args.datadir, "rgb"))) // args.stride
+    
+    # optimize buffer size
+    margin = int(min(100, total_images * 0.1))
+    if args.buffer > total_images + margin:
+         print(f"Reducing buffer size from {args.buffer} to {total_images + margin} to save memory")
+         args.buffer = total_images + margin
 
     for (t, image, depth, intrinsics) in tqdm(image_gen, total=total_images, desc="Pose Estimation:"):
     # for (t, image, intrinsics) in tqdm(image_gen):
