@@ -11,7 +11,8 @@ def main(args):
         resolution=0.01,
         occ_avoid_radius=0.2,
         save_memory=args.save_memory,
-        debug=args.debug
+        debug=args.debug,
+        venv_droid=args.venv_droid
     )
 
     if args.scanning_room:
@@ -83,6 +84,8 @@ if __name__ == "__main__":
                         choices=["Minor Adjustment", "Positional Shift", "Appearance"], help='scene change level.')
     parser.add_argument('--task_description', type=str, default="", help='your task description.')
 
+
+    parser.add_argument('--venv_droid', type=str, default="", help='path to droidslam virtual environment')
 
     args = parser.parse_args()
 

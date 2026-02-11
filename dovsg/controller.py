@@ -67,9 +67,11 @@ class Controller():
             std_ratio: float=1.5,
 
             socket_ip: str="192.168.1.50",
-            socket_port: str="9999"
+            socket_port: str="9999",
+            venv_droid: str=""
         ):
 
+        self.venv_droid = venv_droid
         self.step = step
         self.interval = interval
         self.min_height = min_height
@@ -181,8 +183,19 @@ class Controller():
     def pose_estimation(self):
         # makedirs for poses estimation
         print("\n\nPose Estimation in progress, please waiting for a moment...\n\n")
-        process = subprocess.Popen([
-            "conda", "run", "-n", "droidslam", "python", "pose_estimation.py",
+        if self.venv_droid:
+            venv_path = os.path.expanduser(self.venv_droid)
+            python_exec = os.path.join(venv_path, "bin/python")
+            if not os.path.exists(python_exec):
+                print(f"Error: {python_exec} not found. Fallback to conda.")
+                cmd = ["conda", "run", "-n", "droidslam", "python", "pose_estimation.py"]
+            else:
+                cmd = [python_exec, "pose_estimation.py"]
+        else:
+            cmd = ["conda", "run", "-n", "droidslam", "python", "pose_estimation.py"]
+
+        process = subprocess.Popen(
+            cmd + [
             "--datadir", str(self.recorder_dir),
             "--calib", str(self.recorder_dir / "calib.txt"),
             "--pose_path", "poses_droidslam",
