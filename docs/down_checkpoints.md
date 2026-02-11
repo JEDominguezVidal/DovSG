@@ -5,7 +5,10 @@ In our project, a total of 7 models are used. The versions and download links/me
 4. droid-slam: [https://drive.google.com/file/u/0/d/1PpqVt1H4maBa_GbPJp4NwxRsd9jk-elh/view?usp=sharing&pli=1](https://drive.google.com/file/u/0/d/1PpqVt1H4maBa_GbPJp4NwxRsd9jk-elh/view?usp=sharing&pli=1)
 5. GroundingDINO: [https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth](https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth) and [https://github.com/IDEA-Research/GroundingDINO/blob/main/groundingdino/config/GroundingDINO_SwinT_OGC.py](https://github.com/IDEA-Research/GroundingDINO/blob/main/groundingdino/config/GroundingDINO_SwinT_OGC.py)
 6. recognize_anything: [https://huggingface.co/spaces/xinyu1205/Recognize_Anything-Tag2Text/blob/main/ram_swin_large_14m.pth](https://huggingface.co/spaces/xinyu1205/Recognize_Anything-Tag2Text/blob/main/ram_swin_large_14m.pth)
-7. segment-anything-2: [https://github.com/facebookresearch/sam2?tab=readme-ov-file#download-checkpoints](https://github.com/facebookresearch/sam2?tab=readme-ov-file#download-checkpoints)
+7. segment-anything-2: [https://github.com/facebookresearch/sam2?tab=readme-ov-file#download-checkpoints](https://github.com/facebookresearch/sam2?tab=readme-ov-file#download-checkpoints). Download SAM2 correct checkpoint with 
+```bash
+wget https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_large.pt
+```
 
 <!-- Alternatively, you can download all the checkpoints we use in the project from <a herf="">here</a>. Note that for the anygrasp model, you will need to obtain a custom license and checkpoint based on your device ID. -->
 
