@@ -109,7 +109,7 @@ class MyGroundingDINOSAM2():
         image: np.ndarray, 
         detections: sv.Detections, 
         classes: list[str], 
-        color: Union[Color, ColorPalette] = ColorPalette.default(),
+        color: Union[Color, ColorPalette] = ColorPalette.DEFAULT,
         instance_random_color: bool = False,
         draw_bbox: bool = True,
     ) -> np.ndarray:
@@ -119,6 +119,9 @@ class MyGroundingDINOSAM2():
         '''
         # annotate image with detections
         box_annotator = sv.BoxAnnotator(
+            color = color,
+        )
+        label_annotator = sv.LabelAnnotator(
             color = color,
             text_scale=0.3,
             text_thickness=1,
@@ -151,5 +154,6 @@ class MyGroundingDINOSAM2():
         annotated_image = mask_annotator.annotate(scene=image.copy(), detections=detections)
         
         if draw_bbox:
-            annotated_image = box_annotator.annotate(scene=annotated_image, detections=detections, labels=labels)
+            annotated_image = box_annotator.annotate(scene=annotated_image, detections=detections)
+            annotated_image = label_annotator.annotate(scene=annotated_image, detections=detections, labels=labels)
         return annotated_image, labels
