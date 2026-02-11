@@ -34,10 +34,17 @@ class MyGroundingDINOSAM2():
         )
 
         ### Initialize the SAM2 model ###
-        sam2_model = build_sam2(sam2_model_cfg_path, sam2_checkpoint_path, device=self.device)
-        self.sam2_predictor = SAM2ImagePredictor(sam2_model)
+        self.sam2_model = build_sam2(sam2_model_cfg_path, sam2_checkpoint_path, device=self.device)
+        if self.device == "cuda" and torch.cuda.is_bf16_supported():
+            self.sam2_model.to(dtype=torch.bfloat16)
+        self.sam2_predictor = SAM2ImagePredictor(self.sam2_model)
 
     def run(self, image, classes: list) -> sv.Detections:
+        # GroundingDINO needs to run in float32 because ms_deform_attn doesn't support bfloat16
+        # We ensure autocast is disabled here just in case
+        # However, since we are not in an autocast context by default, we just run it normally.
+        # If global autocast were on, we would need: with torch.autocast(device_type=self.device, enabled=False):
+        
         detections = self.grounding_dino_model.predict_with_classes(
             image=cv2.cvtColor(image, cv2.COLOR_RGB2BGR), # This function expects a BGR image...
             classes=classes,
@@ -68,6 +75,7 @@ class MyGroundingDINOSAM2():
         # detections.class_id maybe None
         if len(detections.class_id) > 0:
             ### Segment Anything Model 2###
+            # This function handles its own autocast internally now
             detections.mask = self.get_sam2_segmentation_from_xyxy(
                 image=image, 
                 xyxy=detections.xyxy
@@ -81,16 +89,24 @@ class MyGroundingDINOSAM2():
             image: np.ndarray, 
             xyxy: np.ndarray
     ) -> np.ndarray:
-        self.sam2_predictor.set_image(image)
-        result_masks = []
-        for box in xyxy:
-            masks, scores, logits = self.sam2_predictor.predict(
-                box=box,
-                multimask_output=True
-            )
-            index = np.argmax(scores)
-            result_masks.append(masks[index].astype(bool))
-        return np.array(result_masks)
+        use_autocast = self.device == "cuda" and torch.cuda.is_bf16_supported()
+        vocab_dtype = torch.bfloat16 if use_autocast else torch.float32
+
+        with torch.inference_mode(), torch.autocast(device_type=self.device, dtype=vocab_dtype, enabled=use_autocast):
+            # The predictor expects the image to be set once, 
+            # and since we might be in a loop or calling this multiple times, it's good practice.
+            # However, ensure set_image isn't too expensive if called repeatedly for the same image.
+            # In this context, it seems 'run' calls this once per image, so it's fine.
+            self.sam2_predictor.set_image(image)
+            result_masks = []
+            for box in xyxy:
+                masks, scores, logits = self.sam2_predictor.predict(
+                    box=box,
+                    multimask_output=True
+                )
+                index = np.argmax(scores)
+                result_masks.append(masks[index].astype(bool))
+            return np.array(result_masks)
 
     def process_tag_classes(self, text_prompt:str) -> list[str]:
         '''Convert a text prompt from Tag2Text to a list of classes. '''
