@@ -27,7 +27,7 @@
 """ my clip just be init once each runing time """
 from PIL import Image
 import open_clip
-from dovsg.utils.utils import clip_checkpoint_path
+from dovsg.utils.utils import clip_checkpoint_path, clip_model_name
 
 class MyClip:
     _instance = None
@@ -42,10 +42,10 @@ class MyClip:
             self.device = device
             print("==> Initializing CLIP model...")
             clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms(
-                model_name="ViT-H-14", pretrained=clip_checkpoint_path
+                model_name=clip_model_name, pretrained=clip_checkpoint_path
             )
             self.clip_model = clip_model.to(self.device)
-            self.clip_tokenizer = open_clip.get_tokenizer("ViT-H-14")
+            self.clip_tokenizer = open_clip.get_tokenizer(clip_model_name)
             print("==> Done initializing CLIP model.")
             self.initialized = True
 

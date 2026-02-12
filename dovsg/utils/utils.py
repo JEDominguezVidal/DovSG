@@ -56,8 +56,8 @@ grounding_dino_checkpoint_path = "checkpoints/GroundingDINO/groundingdino_swint_
 ram_checkpoint_path = "checkpoints/recognize_anything/ram_swin_large_14m.pth"
 
 # clip
-clip_model_name = "ViT-H-14"
-clip_checkpoint_path = "checkpoints/CLIP-ViT-H-14-laion2B-s32B-b79K/open_clip_pytorch_model.bin"
+clip_model_name = "ViT-L-14"
+clip_checkpoint_path = "checkpoints/CLIP-ViT-L-14-laion2B-s32B-b82K/open_clip_pytorch_model.bin"
 
 # anygrasp
 anygrasp_checkpoint_path = "checkpoints/anygrasp/checkpoint_detection.tar"
