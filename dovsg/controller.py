@@ -264,7 +264,7 @@ class Controller():
             color = image / 255
             detections = mygroundingdino_sam2.run(
                 image=image,
-                classes=["floor"]
+                classes=["floor", "cement", "ground", "tile"]
             )
             if len(detections.class_id) > 0:
                 if display_result:
@@ -277,14 +277,29 @@ class Controller():
                     floor_xyzs.append(point_world[mask_new])
                     floor_rgbs.append(color[mask_new])
 
-        floor_xyzs = np.vstack(floor_xyzs)
-        floor_rgbs = np.vstack(floor_rgbs)
-        
-        pcd = o3d.geometry.PointCloud()
-        pcd.points = o3d.utility.Vector3dVector(floor_xyzs)
-        pcd.colors = o3d.utility.Vector3dVector(floor_rgbs)
-        coordinate_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
-        o3d.visualization.draw_geometries([pcd, coordinate_frame])
+        if len(floor_xyzs) > 0:
+            floor_xyzs = np.vstack(floor_xyzs)
+            floor_rgbs = np.vstack(floor_rgbs)
+            
+            pcd = o3d.geometry.PointCloud()
+            pcd.points = o3d.utility.Vector3dVector(floor_xyzs)
+            pcd.colors = o3d.utility.Vector3dVector(floor_rgbs)
+            coordinate_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
+            o3d.visualization.draw_geometries([pcd, coordinate_frame])
+
+            tf_matrix = self.process_floor_points(floor_xyzs)
+        else:
+            print("\033[93mWarning!: No floor detected. Assuming camera start height of 1.1m, pitch 15° down.\033[0m")
+            from scipy.spatial.transform import Rotation as R
+            # Rotate 75 degrees around X (90 - 15) to map Y (down-forward) to Z (up)
+            # Pitch 15 means Y is 15 deg from vertical. 90-15 = 75 align.
+            r = R.from_euler('x', 75, degrees=True)
+            rot_mat = r.as_matrix()
+            tf_matrix = np.eye(4)
+            tf_matrix[:3, :3] = rot_mat
+            # Translate Z by -1.1 so that floor (at 1.1 relative to cam) moves to 0
+            # Camera (at 0) moves to -1.1. After R_x_180, Camera becomes 1.1.
+            tf_matrix[2, 3] = -1.1
 
         R_x_180 = np.array([
             [1, 0, 0, 0],
@@ -292,7 +307,6 @@ class Controller():
             [0, 0, -1, 0],
             [0, 0, 0, 1]
         ])
-        tf_matrix = self.process_floor_points(floor_xyzs)
 
         poses_dir_new = self.recorder_dir / "poses"
         poses_dir_new.mkdir(parents=True, exist_ok=True)
