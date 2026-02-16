@@ -61,10 +61,10 @@ def image_stream(datadir, calib, stride):
         # w1 = int(w0 * np.sqrt((360 * 768) / (h0 * w0)))
         # h1 = int(h0 * np.sqrt((384 * 512) / (h0 * w0)))
         # w1 = int(w0 * np.sqrt((384 * 512) / (h0 * w0)))
-        h1 = int(h0 * np.sqrt((240 * 320) / (h0 * w0)))
-        w1 = int(w0 * np.sqrt((240 * 320) / (h0 * w0)))
-        # h1 = int(h0 * np.sqrt((h0 * w0) / (h0 * w0)))
-        # w1 = int(w0 * np.sqrt((h0 * w0) / (h0 * w0)))
+        # Force strictly smaller resolution to prevent CUDA OOM on long sequences
+        # 320x240 is ~77k pixels. 256x192 is ~49k pixels (36% reduction).
+        h1 = 192 
+        w1 = 256
 
         color = cv2.resize(color, (w1, h1))
         color = color[:h1-h1%8, :w1-w1%8]
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     total_images = len(os.listdir(os.path.join(args.datadir, "rgb"))) // args.stride
     
     # optimize buffer size
-    margin = int(min(100, total_images * 0.1))
+    margin = int(min(50, total_images * 0.1))
     if args.buffer > total_images + margin:
          print(f"Reducing buffer size from {args.buffer} to {total_images + margin} to save memory")
          args.buffer = total_images + margin
@@ -160,6 +160,7 @@ if __name__ == '__main__':
         
         # droid.track(t, image, intrinsics=intrinsics)
         droid.track(t, image, depth=depth, intrinsics=intrinsics)
+        torch.cuda.empty_cache()
 
     traj_est = droid.terminate(image_stream(args.datadir, args.calib, args.stride))
     print(f"Result Pose Number is {len(traj_est)}")
