@@ -19,7 +19,9 @@ real_height = 600  # remove bottom 200px to remove robot arm in image bottom
 real_width = 1200
 
 class RecorderImage():
-    def __init__(self, recorder_dir=None, serial_number="239222303321", 
+    # def __init__(self, recorder_dir=None, serial_number="239222303321", 
+    #              WH=WH, FPS=30, depth_threshold=[DEPTH_MIN, DEPTH_MAX]):
+    def __init__(self, recorder_dir=None, serial_number="035422073006", 
                  WH=WH, FPS=30, depth_threshold=[DEPTH_MIN, DEPTH_MAX]):
         
         if recorder_dir is not None:
